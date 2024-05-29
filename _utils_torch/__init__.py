@@ -1,0 +1,54 @@
+from __future__ import annotations
+from _utils_import import DLUtils
+import numpy as np
+import torch
+import torch.nn as nn
+
+import os
+import pathlib
+from pathlib import Path
+
+from _utils import (
+    GetCurrentScriptDirPath,
+    GetCurrentFilePathWithoutSuffix,
+)
+
+from .wrapper import(
+    TorchModuleWrapper,
+    ModuleList,
+    InitTorchModule,
+    LoadTorchModuleFromFile,
+    LoadTorchModuleFromDict,
+    LoadTorchModuleBufferDict,
+    LoadTorchModuleParamDict,
+    LoadTorchModuleChildrenDict,
+    BuildTorchModule,
+    GetTorchModuleDict, TorchModuleToDict,
+    GetTorchModuleParamDict,
+    GetTorchModuleBufferDict,
+    GetTorchModuleChildrenDict,
+    GetTorchModuleConfig,
+    PrintTorchModule,
+)
+
+from .mlp import (
+    MLP,
+)
+
+if __name__=="__main__":
+    # example usage:
+    mlp = MLP().Init(10, 20, 30, 40).Build()
+    print(mlp)
+    CurrentDirPath = GetCurrentScriptDirPath(__file__)
+    SaveFilePath = GetCurrentFilePathWithoutSuffix(__file__) + "-model.dat"
+    mlp_2 = mlp.ToFile(
+        SaveFilePath
+    ).FromFile(
+        SaveFilePath
+    )
+    print(mlp_2)
+    # mlp.register_parameter(
+    #     "a.b", torch.nn.Parameter(torch.Tensor((10, 10)))
+    # ) # => KeyError: 'parameter name can\'t contain "."'
+    #     # use this rule to exclude parameters
+    PrintTorchModule(mlp_2)

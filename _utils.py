@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 import numpy as np
 import torch
 import torch.nn as nn
@@ -48,18 +48,24 @@ def GetClassInstanceFromClassPath(ClassPath: str, **KwArgs):
 
 def NpArrayToTorchTensor(NpArray: torch.Tensor):
     return torch.from_numpy(NpArray)
-    
 
 def TorchTensorToNpArray(Tensor: np.ndarray):
     return Tensor.cpu().detach().numpy()
-
-
 
 class Dict(dict):
     """
     A subclass of dict that allows attribute-style access.
     """
-    def __init__(self, _dict: dict = None, **Dict):
+    def __init__(self,
+            _dict: dict = None,
+            # allow_missing_attr=False,
+            **Dict
+        ):
+        # self.allow_missing_attr = allow_missing_attr
+        """
+            If allow_missing_attr == True, empty Dict object will be created and returned
+                when trying to get a non-existent attribute
+        """
         if _dict is not None:
             assert len(Dict) == 0
             if not isinstance(_dict, dict):
@@ -69,15 +75,11 @@ class Dict(dict):
         if len(Dict) > 0:
             assert _dict is None
             self.from_dict(Dict)
-
     def __getattr__(self, key):
         try:
             return self[key]
         except KeyError:
-            child = Dict()
-            setattr(self, key, child)
-            return child
-            # raise AttributeError(f"'AttrDict' object has no attribute '{key}'")
+            raise AttributeError(f"'AttrDict' object has no attribute '{key}'")
     def __setattr__(self, key, value):
         """
         will be called when setting attribtue in this way: DictObj.a = b
@@ -104,7 +106,10 @@ class Dict(dict):
         if not isinstance(_dict, dict):
             raise TypeError("Expect a dictionary")
         for Key, Value in _dict.items():
-            self[Key] = Value
+            if isinstance(Value, dict):
+                self[Key] = Dict(Value)
+            else:
+                self[Key] = Value
         return self
     def to_dict(self):        
         _dict = dict()
@@ -115,4 +120,96 @@ class Dict(dict):
                 _dict[key] = value
         return _dict
 
+class DefaultDict(Dict):
+    def __getattr__(self, key):
+        try:
+            return self[key]
+        except KeyError:
+            # if self.allow_missing_attr:
+            child = Dict()
+            setattr(self, key, child)
+            return child
+            # else:
+            #     raise AttributeError(f"'AttrDict' object has no attribute '{key}'")
 
+def LoadModuleFromDict(ModuleDict):
+    assert isinstance(ModuleDict, dict)
+    ModuleDict = Dict(ModuleDict)
+    ClassPath = ModuleDict._class_path
+    module = GetClassInstanceFromClassPath(ClassPath)
+    assert isinstance(module, Module)
+    module.FromDict(ModuleDict)
+    return module
+
+def LoadModuleFromFile(FilePath):
+    FilePath = DLUtils.file.CheckFileExists(FilePath)
+    ModuleDict = DLUtils.file.BinaryFileToObj(FilePath)
+    assert isinstance(ModuleDict, dict)
+    return LoadModuleFromDict(ModuleDict)
+
+def ModuleToDict(module: Module):
+    return module.ToDict()
+
+class Module():
+    def __init__(self, *Args, **KwArgs):
+        self.params = Dict()
+        self.config = Dict()
+        self.submodules = Dict()
+        if len(Args) + len(KwArgs) > 0:
+            self.Init(*Args, **KwArgs)
+    def AddSubModule(self, **SubModuleDict):
+        for Name, SubModule in SubModuleDict.items():
+            self.submodules[Name] = SubModule
+        setattr(self, Name, SubModule)
+    def GetSubModuleDict(self):
+        SubModuleDict = {}
+        for Name in self.submodules.keys():
+            SubModule = getattr(self, Name)
+            assert isinstance(SubModule, Module)
+            SubModuleDict[Name] = SubModule.ToDict()
+        return SubModuleDict
+    def AddParam(self, Name=None, Value=None, **ParamDict):
+        if len(ParamDict) > 0:
+            assert Name is None and Value is None
+            for Name, Value in ParamDict.items():
+                self.AddParam(Name, Value)
+            return
+        self.params[Name] = Value
+        setattr(self, Name, Value)
+        return self
+    def FromFile(self, FilePath):
+        FilePath = DLUtils.file.CheckFileExists(FilePath)
+        ModuleDict = DLUtils.file.BinaryFileToObj(ModuleDict)
+
+    def FromDict(self, ModuleDict: dict):
+        self.config = ModuleDict["config"]
+        self.params = ModuleDict["params"]
+        for Name, SubModuleDict in ModuleDict["submodules"].items():
+            self.AddSubModule(
+                self, Name, LoadModuleFromDict(SubModuleDict)
+            )
+        for Name, Value in self.params.items():
+            setattr(self, Name, Value)
+        return self
+
+    def ToDict(self):
+        for Name in self.params.keys():
+            # collect params
+            self.params[Name] = getattr(self, Name)
+        return {
+            "config": self.config,
+            "param": self.params,
+            "submodules": self.GetSubModuleDict(),
+            "_class_path": self.GetClassPath()
+        }
+    def ToFile(self, FilePath):
+        FilePath = DLUtils.EnsureFileDir(FilePath)
+        ModuleDict = self.ToDict()
+        DLUtils.file.ObjToBinaryFile(ModuleDict, FilePath)
+        return self
+    def GetClassPath(self):
+        return GetClassPathFromClassInstance(self)
+    def Build(self):
+        for SubModule in self.submodules.values():
+            SubModule.Build()
+        return self

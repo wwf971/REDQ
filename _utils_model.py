@@ -13,7 +13,9 @@ else:
 import math
 from _utils_torch import (
     TorchModule, ModuleList, InitTorchModule,
-    MLP
+    MLP,
+    TorchModuleWrapper, TorchModule,
+    LoadTorchModuleDict,
 )
 import DLUtils.network as network
 class TransformerEncoder(ModuleList):
