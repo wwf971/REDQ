@@ -1,0 +1,73 @@
+{
+	// 在utils-python-global/snippet-python.jsonc中进行改动, 然后copy到python.json
+	"sys.path add path": {
+		"prefix": ["sys.path add path"], // 在snippet列表中显示的名称
+		"body": [
+			"", // 在snippet列表中显示的名称
+			"import sys, os, pathlib",
+			"DirPathCurrent = os.path.dirname(os.path.realpath(__file__)) + \"/\"",
+			"DirPathParent = pathlib.Path(DirPathCurrent).parent.absolute().__str__() + \"/\"",
+			"DirPathGrandParent = pathlib.Path(DirPathParent).parent.absolute().__str__() + \"/\"",
+			"DirPathGreatGrandParent = pathlib.Path(DirPathGrandParent).parent.absolute().__str__() + \"/\"",
+			"sys.path += [",
+			"\tDirPathCurrent, DirPathParent, DirPathGrandParent, DirPathGreatGrandParent",
+			"]",
+			"$2" //通过Tab让光标跳跃到下1个placeholder
+		],
+		"description": "sys.path add path"
+	},
+	"sys.path add path(jupyter)": {
+		"prefix": ["sys.path add path(jupyter)"], // 在snippet列表中显示的名称
+		"body": [
+			// "from __future__ import annotations",
+			"import sys, os, pathlib",
+			"DirPathCurrent = os.path.abspath('') + \"/\"",
+			"DirPathParent = pathlib.Path(DirPathCurrent).parent.absolute().__str__() + \"/\"",
+			"DirPathGrandParent = pathlib.Path(DirPathParent).parent.absolute().__str__() + \"/\"",
+			"DirPathGreatGrandParent = pathlib.Path(DirPathGrandParent).parent.absolute().__str__() + \"/\"",
+			"sys.path += [",
+			"\tDirPathCurrent, DirPathParent, DirPathGrandParent, DirPathGreatGrandParent",
+			"]",
+			"$2"
+		],
+		"description": "sys.path add path(jupyter)"
+	},
+	"argparse": {
+		"prefix": "parse_args()", // 在snippet列表中显示的名称
+		"body": [
+			"parse_args()",
+			"\timport argparse",
+			"\tparser = argparse.ArgumentParser()",
+			"\tparser.add_argument('--dvc', type=str, default='cuda', help='running device: cuda or cpu')",
+			"\tparser.add_argument('--vis', type=bool, action='store_true', dest='visualize', help='visualize')",
+			"\tparser.add_argument('--write', type=str2bool, default=False, help='Use SummaryWriter to record the training')",
+			"\tparser.add_argument('--render', type=str2bool, default=False, help='Render or Not')",
+			"\tparser.add_argument('--Loadmodel', type=str2bool, default=False, help='Load pretrained model or Not')",
+			"\tparser.add_argument('--ModelIdex', type=int, default=300000, help='which model to load')",
+			"\targs = parser.parse_args()",
+			"\treturn args",
+		],
+		"description": "parse_args()"
+	},
+	"sys.path": {
+		"prefix": ["sys.path"],
+		"body": [
+			"from __future__ import annotations", // 在snippet列表中显示的名称
+			"import sys, os, pathlib",
+			"DirPathCurrent = os.path.dirname(os.path.realpath(__file__))",
+			"DirPathImport = pathlib.Path(DirPathCurrent).${1:parent}.absolute().__str__()",
+			"sys.path.append(DirPathImport)",
+			"$2" //通过Tab在让光标跳跃到下1个placeholder
+		],
+		"description": "Add to sys.path"
+	},
+	"mujoco_py": {
+		"prefix": "mujoco_py",
+		"body": [
+			"os.environ[\"MUJOCO_GL\"] = \"egl\"",
+			"os.environ[\"PYOPENGL_PLATFORM\"] = \"egl\"",
+			"import mujoco_py",
+		],
+		"description": "set env variable and import mujoco_py"
+	},
+}

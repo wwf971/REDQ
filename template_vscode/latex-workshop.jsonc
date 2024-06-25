@@ -1,25 +1,28 @@
 {
-    "latex-workshop.latex.outDir": "%DIR%/aux",
+
     "latex-workshop.latex.tools": [
         {
             // 编译工具和命令
             "name": "xelatex",
             "command": "xelatex",
             "args": [
-                "-synctex=1",
+                "-synctex=0",
                 "-interaction=nonstopmode",
                 "-file-line-error",
                 "-pdf",
-                "%DOCFILE%"
+                "%DOCFILE%",
+                // "-output-directory=%DIR%/dir",
+                "-output-directory=target"
             ]
         },
         {
             "name": "pdflatex",
             "command": "pdflatex",
             "args": [
-                "-synctex=1",
+                "-synctex=0",
                 "-interaction=nonstopmode",
-                "--aux-directory=%DIR%/aux",
+                // "--aux-directory=%DIR%/aux",
+                // "-output-directory=%DIR%/dir",
                 "-file-line-error",
                 "%DOCFILE%"
             ]
@@ -28,7 +31,8 @@
             "name": "bibtex",
             "command": "bibtex",
             "args": [
-                "%DOCFILE%"
+                "%DOCFILE%",
+                // "-output-directory=%DIR%/dir",
             ]
         }
     ],
@@ -64,4 +68,30 @@
             ]
         }
     ],
+    "latex-workshop.latex.clean.fileTypes": [
+        "*.aux",
+        "*.bbl",
+        "*.blg",
+        "*.idx",
+        "*.ind",
+        "*.lof",
+        "*.lot",
+        "*.out",
+        "*.toc",
+        "*.acn",
+        "*.acr",
+        "*.alg",
+        "*.glg",
+        "*.glo",
+        "*.gls",
+        "*.ist",
+        "*.fls",
+        "*.log",
+        "*.fdb_latexmk"
+    ],
+    // "latex-workshop.latex.outDir": "%DIR%/aux",
+        // setting this makes latex-workshop.latex.clean.fileTypes not delete files.
+    "latex-workshop.latex.autoClean.run": "onBuilt",
+    "latex-workshop.latex.clean.method": "glob",
+    "latex-workshop.latex.clean.subfolder.enabled": true
 }
