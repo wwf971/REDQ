@@ -1,12 +1,12 @@
-from utils import Actor, Multi_Q_Critic_Simple, ReplayBuffer, DRL_Continuous
-import torch.nn.functional as F
+from utils import Multi_Q_Critic_Simple, DRL_Continuous
 import numpy as np
 import torch
+import torch.nn.functional as F
 import random
 
 class REDQ_continuous(DRL_Continuous):
 	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
+		super().__init__(**kwargs) # build actor, replay_buffer
 		"""build q_critic"""
 		self.q_critic = Multi_Q_Critic_Simple(
 			self.state_dim, self.action_dim, (self.net_width,self.net_width), self.critic_num
@@ -22,7 +22,7 @@ class REDQ_continuous(DRL_Continuous):
 			# only update via polyak averaging
 
 	def train(self):
-		"""sample a batch from replay_buffer"""
+		"""sample a mini-batch from replay_buffer"""
 		s, a, r, s_next, dw = self.replay_buffer.sample(self.batch_size)
 
 		"""calculate target Q value"""

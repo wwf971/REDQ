@@ -66,7 +66,7 @@ class Actor(nn.Module):
 		mu = self.mu_layer(net_out)
 		log_std = self.log_std_layer(net_out)
 		log_std = torch.clamp(log_std, self.LOG_STD_MIN, self.LOG_STD_MAX)  #总感觉这里clamp不利于学习
-		# we learn log_std rather than std, so that exp(log_std) is always > 0
+		# use log_std rather than std, so that exp(log_std) is always > 0.0
 		std = torch.exp(log_std)
 		dist = Normal(mu, std)
 		if is_deterministic: u = mu
@@ -75,9 +75,9 @@ class Actor(nn.Module):
 		# enforce action bound
 		a = torch.tanh(u)
 		if with_logprob:
-			# Get probability density of logp_pi_a from probability density of u:
+			# get probability density of logp_pi_a from probability density of u:
 			# logp_pi_a = (dist.log_prob(u) - torch.log(1 - a.pow(2) + 1e-6)).sum(dim=1, keepdim=True)
-			# Derive from the above equation. No a, thus no tanh(h), thus less gradient vanish and more stable.
+			# derive from the above equation. No a, thus no tanh(h), thus less gradient vanish and more stable.
 			logp_pi_a = dist.log_prob(u).sum(axis=1, keepdim=True) - (2 * (np.log(2) - u - F.softplus(-2 * u))).sum(axis=1, keepdim=True)
 		else:
 			logp_pi_a = None

@@ -34,8 +34,8 @@ def parse_args():
     parser.add_argument('--load_model', type=str2bool, default=False, help='load pretrained model or Not')
 
     parser.add_argument('--seed', type=int, default=0, help='random seed')
-    parser.add_argument('--step_train_max', type=int, default=int(5e6), help='max train step')
-    parser.add_argument('--step_startup', type=int, default=int(5e3), help='random starting data')
+    parser.add_argument('--step_train_max', type=str, default=str(5e6), help='max train step')
+    parser.add_argument('--step_startup', type=str, default=str(5e3), help='random starting data')
 
     # RL setting
     parser.add_argument('--env_index', type=int, default=0)
@@ -83,14 +83,7 @@ env_name_list = [
 ]
 env_name_short_list = ['hopper', 'walker', 'ant', 'humanoid']
 
-def main():
-    args = parse_args()
-
-    from utils_project import DirPathProject
-    assert args.algorithm in ["sac", "redq"]
-    args.env_name = env_name_list[args.env_index]
-    args.env_name_short = env_name_short_list[args.env_index]
-
+def build_env(args):
     # build env
     env = gym.make(args.env_name, render_mode = "human" if args.is_render else None)
     eval_env = gym.make(args.env_name)
@@ -100,6 +93,17 @@ def main():
     args.episode_step_max = env._max_episode_steps
     print(f'env_name:{args.env_name}  state_dim:{args.state_dim}  action_dim:{args.action_dim}'
           f'max_a:{args.a_max}  min_a:{env.action_space.low[0]}  episode_step_max:{args.episode_step_max}')
+    return env
+
+def main():
+    args = parse_args()
+
+    from utils_project import DirPathProject
+    assert args.algorithm in ["sac", "redq"]
+    args.env_name = env_name_list[args.env_index]
+    args.env_name_short = env_name_short_list[args.env_index]
+
+    env = build_env(args)
 
     set_seed(args)
     env_seed = args.seed
@@ -130,48 +134,49 @@ def main():
     # args.step_startup = 5 * args.episode_step_max
     args.step_start_train = 2 * args.episode_step_max
     
-    agent.save("before-train", save_dir_path)
+    agent.save(tiemstep="before-train", save_dir_path=save_dir_path)
     
-    if args.is_render:
-        while True:
-            score = evaluate(env, agent, args.a_max, turns=1)
-            print('env_name:', args.env_name_short, 'score:', score)
-    else:
-        step_num = 0
-        while step_num < args.step_train_max:
-            s, info = env.reset(seed=env_seed)
-            env_seed += 1
-            done = False
+    # if args.is_render:
+    #     while True:
+    #         score = evaluate(env, agent, args.a_max, turns=1)
+    #         print('env_name:', args.env_name_short, 'score:', score)
+    
+    # main loop of training
+    step_num = 0
+    while step_num < args.step_train_max:
+        s, info = env.reset(seed=env_seed)
+        env_seed += 1
+        done = False
 
-            while not done:
-                if step_num < args.step_startup:
-                    a_env = env.action_space.sample()  # act: range: (-a_max, a_max)
-                    a = norm_a_env(a_env, args.a_max)
-                else:
-                    a = agent.select_action(s, deterministic=False)
-                    a_env = to_a_env(a, args.a_max)  # act∈[-max,max]
-                s_next, r, dw, tr, info = env.step(a_env)  # dw: dead & win. tr: truncated
-                done = (dw or tr)
+        while not done:
+            if step_num < args.step_startup:
+                a_env = env.action_space.sample()  # act: range: (-a_max, a_max)
+                a = norm_a_env(a_env, args.a_max)
+            else:
+                a = agent.select_action(s, is_deterministic=False)
+                a_env = to_a_env(a, args.a_max)  # act∈[-max,max]
+            s_next, r, dw, tr, info = env.step(a_env)  # dw: dead & win. tr: truncated
+            done = (dw or tr)
 
-                agent.replay_buffer.add(s, a, r, s_next, dw)
-                s = s_next
-                step_num += 1
-                
-                if (step_num % args.train_interval == 0) and (step_num >= args.step_start_train):
-                    for train_index in range(args.train_num):
-                        agent.train()
+            agent.replay_buffer.add(s, a, r, s_next, dw)
+            s = s_next
+            step_num += 1
+            
+            if (step_num % args.train_interval == 0) and (step_num >= args.step_start_train):
+                for train_index in range(args.train_num):
+                    agent.train()
 
-                # evaluate
-                if step_num % args.eval_interval == 0:
-                    ep_r = evaluate(eval_env, agent, args.a_max, turns=3)
-                    if args.use_tensorboard: writer.add_scalar('ep_r', ep_r, global_step=step_num)
-                    print(f'env_name:{args.env_name_short}. step_num: {int(step_num/1000)}k, test return:{ep_r}')
+            # evaluate
+            if step_num % args.eval_interval == 0:
+                ep_r = evaluate(eval_env, agent, args.a_max, turns=3)
+                if args.use_tensorboard: writer.add_scalar('ep_r', ep_r, global_step=step_num)
+                print(f'env_name:{args.env_name_short}. step_num: {int(step_num/1000)}k, test return:{ep_r}')
 
-                # save
-                if step_num % args.save_interval == 0:
-                    agent.save(step_num, save_dir_path)
-        env.close()
-        eval_env.close()
+            # save
+            if step_num % args.save_interval == 0:
+                agent.save(step_num, save_dir_path)
+    env.close()
+    eval_env.close()
 
 if __name__ == '__main__':
     main()

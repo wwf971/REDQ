@@ -1,12 +1,11 @@
-from utils import Actor, Double_Q_Critic, ReplayBuffer, DRL_Continuous
-import torch.nn.functional as F
+from utils import Double_Q_Critic, DRL_Continuous
 import numpy as np
 import torch
-import copy
+import torch.nn.functional as F
 
 class SAC_countinuous(DRL_Continuous):
 	def __init__(self, **kwargs):
-		super().__init__(**kwargs)
+		super().__init__(**kwargs) # build actor, replay_buffer
 		"""build q_critic"""
 		self.q_critic = Double_Q_Critic(
 			self.state_dim, self.action_dim, (self.net_width,self.net_width)
@@ -21,7 +20,8 @@ class SAC_countinuous(DRL_Continuous):
 		for p in self.q_critic_target.parameters(): p.requires_grad = False
 			# only update via polyak averaging
 
-	def train(self,):
+	def train(self):
+		"""sample a mini-batch from replay_buffer"""
 		s, a, r, s_next, dw = self.replay_buffer.sample(self.batch_size)
 
 		"""update q_critic params"""
@@ -70,4 +70,3 @@ class SAC_countinuous(DRL_Continuous):
 				self.critic_target_update_ratio * param.data +
 				(1.0 - self.critic_target_update_ratio) * target_param.data
 			)
-

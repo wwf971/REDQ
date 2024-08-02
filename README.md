@@ -9,14 +9,15 @@ Run following command to train:
 python src/main.py --env_index 1 --algorithm sac --device cuda:1
 ```
 
--  env_index: 1 for 'hopper', 2 for 'walker', 3 for 'ant', 4 for 'humanoid'.
-- alorithm: sac or redq
-
 Each experiment will create a folder in output/, where data will be stored.
 
 ## Hyperparameters
 - algorithm. redq or sac.
     - command line argument `--algorithm sac`
+
+- task. mujoco task agent will be trained on.
+    - command line argument `--env_index 1`
+    - 1 for 'hopper', 2 for 'walker', 3 for 'ant', 4 for 'humanoid'.
 
 - $N$. ensemble size. number of Q functions. default: 20.
     - command line argument `--critic_num 20`
@@ -32,7 +33,10 @@ Each experiment will create a folder in output/, where data will be stored.
     - command line argument `--critic_target_update_ratio 0.005`
 
 - replay buffer size. default: 1e6.
-    - command line argument `--replay_buffer_size 1000000`
+    - command line argument `--replay_buffer_size 1e6`
+
+- maximum training step. default: 5e6
+    - commdn line argument `--step_train_max 5e6`
 
 <!-- | Symbol      | Description     | Default Value |
 | ----------- | --------------- | ------------- |

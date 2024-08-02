@@ -1,4 +1,4 @@
-# import mujoco_py as soon as possible
+# import mujoco_py as soon as possible. mujoco_py is very buggy.
 import os
 os.environ["MUJOCO_GL"] = "egl"
 os.environ["PYOPENGL_PLATFORM"] = "egl"
