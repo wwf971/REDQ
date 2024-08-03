@@ -11,6 +11,17 @@ python src/main.py --env_index 1 --algorithm sac --device cuda:1
 
 Each experiment will create a folder in output/, where data will be stored.
 
+## Folder structure
+
+- `src/main.py` is entry point of all training tasks. it includes code for:
+    - parsing command line argument parsing
+    - initializing gym mujoco task
+    - creating folder for experiment
+    - main loop of training
+- `src/redq.py` and `src/sac.py` contains classes that implement redq and sac algorithm, respectively.
+- `src/utils.py` contain class of replay buffer, actor, and critic.
+- `src/plot-train.ipynb` plots compariason of learning curve in two experiment instance.
+
 ## Hyperparameters
 - algorithm. redq or sac.
     - command line argument `--algorithm sac`

@@ -302,3 +302,58 @@ def set_seed(args):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     print("random seed: %d"%args.seed)
+
+import sys, os, pathlib
+DirPathCurrent = os.path.abspath('') + "/"
+DirPathParent = pathlib.Path(DirPathCurrent).parent.absolute().__str__() + "/"
+DirPathGrandParent = pathlib.Path(DirPathParent).parent.absolute().__str__() + "/"
+DirPathGreatGrandParent = pathlib.Path(DirPathGrandParent).parent.absolute().__str__() + "/"
+sys.path += [
+    DirPathCurrent, DirPathParent, DirPathGrandParent
+]
+from utils_project import ListAllFilePath, DirPathProject
+
+
+
+def _get_step_value_list(ea):
+    ep_r_events = ea.Scalars('ep_r')
+    steps = [event.step for event in ep_r_events]
+    values = [event.value for event in ep_r_events]
+
+    return steps, values
+
+def plot_train_curve_cmp(path_sac, path_redq, task_name):
+	path_tensorboard_sac = ListAllFilePath(os.path.join(path_sac, "tensorboard"))[0]
+	path_tensorboard_redq = ListAllFilePath(os.path.join(path_redq, "tensorboard"))[0]
+
+	from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
+	ea_sac = EventAccumulator(path_tensorboard_sac)
+	ea_sac.Reload()
+
+	ea_redq = EventAccumulator(path_tensorboard_redq)
+	ea_redq.Reload()
+
+	import matplotlib.pyplot as plt
+
+	steps_sac, values_sac = _get_step_value_list(ea_sac)
+	steps_redq, values_redq = _get_step_value_list(ea_redq)
+
+	# plot the data
+	import matplotlib.pyplot as plt
+	len_sac = len(steps_sac)
+	len_redq = len(steps_redq)
+
+	plot_step_end = min(len_sac, len_redq * 5)
+	# plot the data
+	plt.figure(figsize=(10, 5))
+	plt.plot(steps_sac[:plot_step_end * 5], values_sac[:plot_step_end * 5], label="sac")
+	plt.plot(steps_redq, values_redq, label="redq")
+	plt.legend()
+	plt.xlabel('environment interactions')
+	plt.ylabel('average return')
+	plt.title('Task: %s'%task_name)
+	plt.legend()
+	plt.savefig(DirPathProject + "result/train-cmp-%s.png"%task_name)
+	plt.show()
+
+	return

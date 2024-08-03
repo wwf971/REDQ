@@ -13,7 +13,7 @@ sys.path += [
 ]
 DirPathProject = DirPathCurrent
 
-def ListFileNames(DirPath):
+def ListAllFileName(DirPath):
     # assert ExistsDir(DirPath), "Non-existing DirPath: %s"%DirPath
     assert os.path.isdir(DirPath), "Not a Dir: %s"%DirPath
     Items = os.listdir(DirPath)
@@ -24,10 +24,8 @@ def ListFileNames(DirPath):
             Files.append(Item)
     return Files
 
-def ListFilePaths(DirPath):
+def ListAllFilePath(DirPath):
     if not DirPath.endswith("/") or DirPath.endswith("\\"):
         DirPath += "/"
-    FileNameList = ListFileNames(DirPath)
+    FileNameList = ListAllFileName(DirPath)
     return [DirPath + FileName for FileName in FileNameList]
-ListAllFilesPath = ListAllFilePaths = GetAllFilePaths = GetAllFilesPath = ListFilesPath = ListFilesPaths = ListFilePaths
-
