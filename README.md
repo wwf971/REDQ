@@ -9,7 +9,7 @@ Run following command to train:
 python src/main.py --env_index 1 --algorithm sac --device cuda:1
 ```
 
-Each experiment will create a folder in output/, where data will be stored.
+Each train instance will create a folder in output/ to store experiment data.
 
 ## Folder structure
 
@@ -33,7 +33,7 @@ Each experiment will create a folder in output/, where data will be stored.
 - $N$. ensemble size. number of Q functions. default: 20.
     - command line argument `--critic_num 20`
 
-- $M$. number of Q functions selected when . default: 2.
+- $M$. number of Q functions selected to compute MSBE target term. default: 2.
     - command line argument `--critic_num_select 2`
 
 - $G$. UTD(update-to-data) ratio. default: 20
