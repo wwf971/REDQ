@@ -55,6 +55,9 @@ Each experiment will create a folder in output/, where data will be stored.
 | Paragraph   | Text        | -->
 
 ## Experiments
+
+All experimetns are conducted using default hyperparameters values, which are same to those used in REDQ paper.
+
 ![hopper](result/train-cmp-hopper.png)
 ![walker](result/train-cmp-walker.png)
 ![ant](result/train-cmp-ant.png)
