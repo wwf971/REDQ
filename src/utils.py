@@ -343,10 +343,10 @@ def plot_train_curve_cmp(path_sac, path_redq, task_name):
 	len_sac = len(steps_sac)
 	len_redq = len(steps_redq)
 
-	plot_step_end = min(len_sac, len_redq * 5)
+	plot_step_end = min(len_sac, len_redq * 3)
 	# plot the data
 	plt.figure(figsize=(10, 5))
-	plt.plot(steps_sac[:plot_step_end * 5], values_sac[:plot_step_end * 5], label="sac")
+	plt.plot(steps_sac[:plot_step_end], values_sac[:plot_step_end], label="sac")
 	plt.plot(steps_redq, values_redq, label="redq")
 	plt.legend()
 	plt.xlabel('environment interactions')
