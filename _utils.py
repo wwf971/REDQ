@@ -22,11 +22,7 @@ def GetScriptDirPath(__File__=None, EndWithSlash=True):
     return script_dir_pathlib
 GetCurrentScriptDirPath = GetScriptDirPath
 
-def GetCurrentFilePathWithoutSuffix(__File__=None, EndWithSlash=True):
-    if __File__ is None:
-        __File__ = __file__
-    Name, Suffix = DLUtils.file.SeparateFileNameAndSuffix(__File__)
-    return Name
+
 
 def class_instance_from_class_path(Instance):
     cls = Instance.__class__
