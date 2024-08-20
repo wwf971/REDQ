@@ -13,9 +13,9 @@ from _utils import (
     GetCurrentFilePathWithoutSuffix,
 )
 
-from .wrapper import(
+from _utils_torch.wrapper import(
     TorchModuleWrapper,
-    ModuleList,
+    ModuleList, TorchModule,
     InitTorchModule,
     LoadTorchModuleFromFile,
     LoadTorchModuleFromDict,
@@ -31,7 +31,7 @@ from .wrapper import(
     PrintTorchModule,
 )
 
-from .mlp import (
+from _utils_torch.mlp import (
     MLP,
 )
 

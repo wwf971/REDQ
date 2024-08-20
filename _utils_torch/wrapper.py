@@ -202,6 +202,8 @@ class TorchModuleWrapper(nn.Module):
         if hasattr(self, "_IsLoad"):
             delattr(self, "_IsLoad")
         return self
+    # def __repr__(self):
+    #     return PrintTorchModule(self)
 TorchModule = TorchModuleWrapper
 
 def PrintModuleParam(model: torch.nn.Module, OutPipe=None):
@@ -222,10 +224,10 @@ def PrintTorchModule(model: torch.nn.Module, OutPipe=None):
     for Name, Param in ParamDict.items():
         if "." in Name: # Param belongs to one of child modules.
             continue
-        OutPipe.print("Param: %s.\t%s."%(Name, list(Param.shape)))
+        OutPipe.print("param: %s.\t%s."%(Name, list(Param.shape)))
     SubModuleDict = dict(model.named_children()) # list direct submodule of the module
     for Name, SubModule in SubModuleDict.items():
-        OutPipe.print("SubModule: %s. Class: %s"%(
+        OutPipe.print("SubModule: %s. class: %s"%(
             Name,
             SubModule._get_name() # torch.nn.Linear ==> name
         ))

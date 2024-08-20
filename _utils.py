@@ -90,6 +90,8 @@ class Dict(dict):
             del self[key]
         except KeyError:
             raise AttributeError(f"'AttrDict' object has no attribute '{key}'")
+    def hasattr(self, key):
+        return key in self
     def test(self):
         # Example usage:
         d = Dict()
@@ -105,11 +107,11 @@ class Dict(dict):
     def from_dict(self, _dict: dict):
         if not isinstance(_dict, dict):
             raise TypeError("Expect a dictionary")
-        for Key, Value in _dict.items():
-            if isinstance(Value, dict):
-                self[Key] = Dict(Value)
+        for key, value in _dict.items():
+            if isinstance(value, dict):
+                self[key] = Dict(value)
             else:
-                self[Key] = Value
+                self[key] = value
         return self
     def to_dict(self):        
         _dict = dict()
@@ -119,6 +121,39 @@ class Dict(dict):
             else:
                 _dict[key] = value
         return _dict
+    def update(self, dict_external:Dict):
+        for key, value in dict_external.items():
+            if isinstance(value, dict) and not isinstance(value, Dict):
+                value = Dict(value)
+            if not hasattr(self, key):
+                self[key] = value
+                continue
+
+            value_old = self[key]
+            if isinstance(value_old, dict):
+                if not isinstance(value_old, Dict):
+                    value_old = Dict(value_old)
+                value_old.update(value)
+            else:
+                self[key] = value # overwrite
+        return self
+    def create_if_non_exist(self, key) -> Dict:
+        if key in self:
+            return self[key]
+        else:
+            value = Dict()
+            self[key] = value
+            return value
+    def check_key_exist(self, key):
+        assert key in self
+        return self
+    def set_if_non_exist(self, **_dict):
+        for key, value in _dict.items():
+            if key in self:
+                continue
+            else:
+                self[key] = value
+        return self
 
 class DefaultDict(Dict):
     def __getattr__(self, key):
@@ -152,15 +187,20 @@ def ModuleToDict(module: Module):
 
 class Module():
     def __init__(self, *Args, **KwArgs):
-        self.params = Dict()
+        self.param = Dict()
         self.config = Dict()
         self.submodules = Dict()
         if len(Args) + len(KwArgs) > 0:
             self.Init(*Args, **KwArgs)
-    def AddSubModule(self, **SubModuleDict):
-        for Name, SubModule in SubModuleDict.items():
+    def AddSubModule(self, Name=None, SubModule=None, **SubModuleDict):
+        if len(SubModuleDict) > 0:
+            for _Name, _SubModule in SubModuleDict.items():
+                self.AddSubModule(_Name, _SubModule)
+            assert Name is None and SubModule is None
+        else:
             self.submodules[Name] = SubModule
-        setattr(self, Name, SubModule)
+            setattr(self, Name, SubModule)
+        return self
     def GetSubModuleDict(self):
         SubModuleDict = {}
         for Name in self.submodules.keys():
@@ -174,7 +214,7 @@ class Module():
             for Name, Value in ParamDict.items():
                 self.AddParam(Name, Value)
             return
-        self.params[Name] = Value
+        self.param[Name] = Value
         setattr(self, Name, Value)
         return self
     def FromFile(self, FilePath):
@@ -183,22 +223,21 @@ class Module():
 
     def FromDict(self, ModuleDict: dict):
         self.config = ModuleDict["config"]
-        self.params = ModuleDict["params"]
+        self.param = ModuleDict["param"]
         for Name, SubModuleDict in ModuleDict["submodules"].items():
             self.AddSubModule(
-                self, Name, LoadModuleFromDict(SubModuleDict)
+                Name, LoadModuleFromDict(SubModuleDict)
             )
-        for Name, Value in self.params.items():
-            setattr(self, Name, Value)
+        for Name, Value in self.param.items():
+            setattr(self, Name, Value) # mount param to self
         return self
 
     def ToDict(self):
-        for Name in self.params.keys():
-            # collect params
-            self.params[Name] = getattr(self, Name)
+        for Name in self.param.keys():
+            self.param[Name] = getattr(self, Name) # collect param from self
         return {
             "config": self.config,
-            "param": self.params,
+            "param": self.param,
             "submodules": self.GetSubModuleDict(),
             "_class_path": self.GetClassPath()
         }
