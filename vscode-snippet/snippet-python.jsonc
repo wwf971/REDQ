@@ -38,7 +38,7 @@
 			"parse_args()",
 			"\timport argparse",
 			"\tparser = argparse.ArgumentParser()",
-			"\tparser.add_argument('--dvc', type=str, default='cuda', help='running device: cuda or cpu')",
+			"\tparser.add_argument('--device', type=str, default='cuda', help='running device: cuda or cpu')",
 			"\tparser.add_argument('--vis', type=bool, action='store_true', dest='visualize', help='visualize')",
 			"\tparser.add_argument('--write', type=str2bool, default=False, help='Use SummaryWriter to record the training')",
 			"\tparser.add_argument('--render', type=str2bool, default=False, help='Render or Not')",
@@ -50,7 +50,7 @@
 		"description": "parse_args()"
 	},
 	"sys.path": {
-		"prefix": ["sys.path"],
+		"prefix": ["sys.path add path(simple)"],
 		"body": [
 			"from __future__ import annotations", // 在snippet列表中显示的名称
 			"import sys, os, pathlib",
