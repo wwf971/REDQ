@@ -10,7 +10,7 @@ from pathlib import Path
 
 from _utils import (
     GetCurrentScriptDirPath,
-    GetCurrentFilePathWithoutSuffix,
+    get_file_path_without_suffix,
 )
 
 from _utils_torch.wrapper import(
@@ -23,7 +23,7 @@ from _utils_torch.wrapper import(
     LoadTorchModuleParamDict,
     LoadTorchModuleChildrenDict,
     BuildTorchModule,
-    GetTorchModuleDict, TorchModuleToDict,
+    GetTorchModuleDict, Torchmodule_to_dict,
     GetTorchModuleParamDict,
     GetTorchModuleBufferDict,
     GetTorchModuleChildrenDict,
@@ -40,7 +40,7 @@ if __name__=="__main__":
     mlp = MLP().Init(10, 20, 30, 40).Build()
     print(mlp)
     CurrentDirPath = GetCurrentScriptDirPath(__file__)
-    SaveFilePath = GetCurrentFilePathWithoutSuffix(__file__) + "-model.dat"
+    SaveFilePath = get_file_path_without_suffix(__file__) + "-model.dat"
     mlp_2 = mlp.ToFile(
         SaveFilePath
     ).FromFile(

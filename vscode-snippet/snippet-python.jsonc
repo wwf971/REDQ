@@ -70,4 +70,15 @@
 		],
 		"description": "set env variable and import mujoco_py"
 	},
+
+	// example
+	"parser": {
+		"prefix": "parser",
+		"body": [
+			"console.log('$1');", // $1也可以替换为{$1:content}
+			"$2"
+		],
+		"description": "Log output to console"
+	},
+
 }

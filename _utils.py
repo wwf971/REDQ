@@ -28,21 +28,21 @@ def GetCurrentFilePathWithoutSuffix(__File__=None, EndWithSlash=True):
     Name, Suffix = DLUtils.file.SeparateFileNameAndSuffix(__File__)
     return Name
 
-def GetClassPathFromClassInstance(Instance):
+def class_instance_from_class_path(Instance):
     cls = Instance.__class__
     module = cls.__module__
     qualname = cls.__qualname__
     return f"{module}.{qualname}"
 
-def GetClassInstanceFromClassPath(ClassPath: str, **KwArgs):
+def class_path_from_class_instance(ClassPath: str, **KwArgs):
     import importlib
-    # Split the class_path into module path and class name
+    # split the class_path into module path and class name
     ModulePath, ClassName = ClassPath.rsplit('.', 1)
-    # Import the module
+    # import the module
     module = importlib.import_module(ModulePath)
-    # Get the class
+    # get the class
     cls = getattr(module, ClassName)
-    # Create an instance of the class
+    # create an instance of the class
     instance = cls(**KwArgs)
     return instance
 
@@ -166,89 +166,3 @@ class DefaultDict(Dict):
             return child
             # else:
             #     raise AttributeError(f"'AttrDict' object has no attribute '{key}'")
-
-def LoadModuleFromDict(ModuleDict):
-    assert isinstance(ModuleDict, dict)
-    ModuleDict = Dict(ModuleDict)
-    ClassPath = ModuleDict._class_path
-    module = GetClassInstanceFromClassPath(ClassPath)
-    assert isinstance(module, Module)
-    module.FromDict(ModuleDict)
-    return module
-
-def LoadModuleFromFile(FilePath):
-    FilePath = DLUtils.file.CheckFileExists(FilePath)
-    ModuleDict = DLUtils.file.BinaryFileToObj(FilePath)
-    assert isinstance(ModuleDict, dict)
-    return LoadModuleFromDict(ModuleDict)
-
-def ModuleToDict(module: Module):
-    return module.ToDict()
-
-class Module():
-    def __init__(self, *Args, **KwArgs):
-        self.param = Dict()
-        self.config = Dict()
-        self.submodules = Dict()
-        if len(Args) + len(KwArgs) > 0:
-            self.Init(*Args, **KwArgs)
-    def AddSubModule(self, Name=None, SubModule=None, **SubModuleDict):
-        if len(SubModuleDict) > 0:
-            for _Name, _SubModule in SubModuleDict.items():
-                self.AddSubModule(_Name, _SubModule)
-            assert Name is None and SubModule is None
-        else:
-            self.submodules[Name] = SubModule
-            setattr(self, Name, SubModule)
-        return self
-    def GetSubModuleDict(self):
-        SubModuleDict = {}
-        for Name in self.submodules.keys():
-            SubModule = getattr(self, Name)
-            assert isinstance(SubModule, Module)
-            SubModuleDict[Name] = SubModule.ToDict()
-        return SubModuleDict
-    def AddParam(self, Name=None, Value=None, **ParamDict):
-        if len(ParamDict) > 0:
-            assert Name is None and Value is None
-            for Name, Value in ParamDict.items():
-                self.AddParam(Name, Value)
-            return
-        self.param[Name] = Value
-        setattr(self, Name, Value)
-        return self
-    def FromFile(self, FilePath):
-        FilePath = DLUtils.file.CheckFileExists(FilePath)
-        ModuleDict = DLUtils.file.BinaryFileToObj(ModuleDict)
-
-    def FromDict(self, ModuleDict: dict):
-        self.config = ModuleDict["config"]
-        self.param = ModuleDict["param"]
-        for Name, SubModuleDict in ModuleDict["submodules"].items():
-            self.AddSubModule(
-                Name, LoadModuleFromDict(SubModuleDict)
-            )
-        for Name, Value in self.param.items():
-            setattr(self, Name, Value) # mount param to self
-        return self
-
-    def ToDict(self):
-        for Name in self.param.keys():
-            self.param[Name] = getattr(self, Name) # collect param from self
-        return {
-            "config": self.config,
-            "param": self.param,
-            "submodules": self.GetSubModuleDict(),
-            "_class_path": self.GetClassPath()
-        }
-    def ToFile(self, FilePath):
-        FilePath = DLUtils.EnsureFileDir(FilePath)
-        ModuleDict = self.ToDict()
-        DLUtils.file.ObjToBinaryFile(ModuleDict, FilePath)
-        return self
-    def GetClassPath(self):
-        return GetClassPathFromClassInstance(self)
-    def Build(self):
-        for SubModule in self.submodules.values():
-            SubModule.Build()
-        return self

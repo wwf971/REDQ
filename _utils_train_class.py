@@ -1,11 +1,11 @@
 import sqlite3
 from typing import TYPE_CHECKING
 
-
+import _utils_file
 def CreateDataBase(FilePath):
     FilePath = DLUtils.file.StandardizeFilePath(FilePath)
-    if DLUtils.file.ExistsFile(FilePath):
-        DLUtils.file.RemoveFile(FilePath)
+    if _utils_file.file_exist(FilePath):
+        _utils_file.remove_file(FilePath)
     con = sqlite3.connect(FilePath)
     cursor = con.cursor()
     cursor.execute(

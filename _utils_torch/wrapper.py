@@ -10,9 +10,9 @@ from _utils import (
     TorchTensorToNpArray,
     GetScriptDirPath,
     GetCurrentScriptDirPath,
-    GetCurrentFilePathWithoutSuffix,
-    GetClassInstanceFromClassPath,
-    GetClassPathFromClassInstance,
+    get_file_path_without_suffix,
+    class_path_from_class_instance,
+    class_instance_from_class_path,
 )
 
 import numpy as np
@@ -35,7 +35,7 @@ class TorchModuleWrapper(nn.Module):
                 BuildTorchModule(Child)
         return self
     def GetClassPath(self):
-        return GetClassPathFromClassInstance(self)
+        return class_instance_from_class_path(self)
     def AddParam(self, Name, Param, **ParamDict):
         if isinstance(Param, np.ndarray):
             Param = torch.from_numpy(Param).float() # dtype=float32
@@ -151,7 +151,7 @@ class TorchModuleWrapper(nn.Module):
                 InitArgs = ChildDict.config["init_args"]
             else:
                 InitArgs = {}
-            Child = GetClassInstanceFromClassPath(
+            Child = class_path_from_class_instance(
                 ChildClassPath,
                 **InitArgs
             )
@@ -297,16 +297,16 @@ def GetTorchModuleChildrenDict(Module: torch.nn.Module):
         ChildrenDict[Name] = GetTorchModuleDict(Child)
     return ChildrenDict
 
-def TorchModuleToDict(Module: torch.nn.Module):
+def Torchmodule_to_dict(Module: torch.nn.Module):
     ModuleDict = {
         "config": GetTorchModuleConfig(Module),
         "param": GetTorchModuleParamDict(Module),
         "buffer": GetTorchModuleBufferDict(Module),
         "children": GetTorchModuleChildrenDict(Module),
-        "_class_path": GetClassPathFromClassInstance(Module)
+        "_class_path": class_instance_from_class_path(Module)
     }
     return ModuleDict
-GetTorchModuleDict = TorchModuleToDict
+GetTorchModuleDict = Torchmodule_to_dict
 
 def BuildTorchModule(Module: torch.nn.Module, OutPipe=None):
     for Name, Child in dict(Module.named_children()).items():
@@ -336,7 +336,7 @@ def LoadTorchModuleChildrenDict(Module: torch.nn.Module, ChildrenDict):
             InitArgs = ChildDict.config["init_args"]
         else:
             InitArgs = {}
-        Child = GetClassInstanceFromClassPath(ChildClassPath, **InitArgs)
+        Child = class_path_from_class_instance(ChildClassPath, **InitArgs)
         LoadTorchModuleDict(ChildDict)
         Module.add_module(Name, Child)
     return Module
@@ -363,7 +363,7 @@ def LoadTorchModuleFromDict(ModuleDict: dict):
     ModuleDict = Dict(ModuleDict)
     ClassPath = ModuleDict._class_path
 
-    Module = GetClassInstanceFromClassPath(ClassPath)
+    Module = class_path_from_class_instance(ClassPath)
     if isinstance(Module, TorchModuleWrapper):
         Module.LoadModuleDict(ModuleDict)
     elif isinstance(Module, torch.nn.Module):
