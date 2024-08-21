@@ -1,3 +1,8 @@
+"""
+check import:
+    python -X importtime _lib_import.py
+"""
+
 import sys, os, pathlib
 dir_path_current = os.path.dirname(os.path.realpath(__file__)) + "/"
 dir_path_parent = pathlib.Path(dir_path_current).parent.absolute().__str__() + "/"
@@ -10,12 +15,13 @@ sys.path += [
 LAZY_IMPORT = True
 
 import time
+import importlib
+def ImportModule(SubModuleStr: str):
+
+    SubModule = importlib.import_module(SubModuleStr)
+    return SubModule
 def ImportSubModuleFromPathList(SubModulePathList: list):
     assert len(SubModulePathList) > 1
-    # SubModule = importlib.import_module(
-    #     name="." + SubModulePathList[-1], package=".".join(SubModulePathList[:-1])
-    # )
-    import importlib
     SubModule = importlib.import_module(".".join(SubModulePathList))
     return SubModule
 def LazyImport(ModuleStr, FuncAfterImport=None):
@@ -25,6 +31,18 @@ def LazyImport(ModuleStr, FuncAfterImport=None):
     module, submodule
     """
     return _LazyImport(ModuleStr, ImportMode="Module", FuncAfterImport=FuncAfterImport)
+def FromImport(ModuleStr: str, VarStr: str):
+    """
+    from a.b import c as d => d = FromImport("a.b", "c")
+    """
+    SubModule = ImportModule(ModuleStr)
+    Var = getattr(SubModule, VarStr)
+    return Var
+def LazyFromImport(ModuleStr: str, VarStr: str):
+    """
+    from a.b import c as d => d = LazyFromImport("a.b", "c")
+    """
+    return _LazyImport(ModuleStr, VarStr, ImportMode="From")
 
 class _LazyImport(object):
     def __init__(self,
@@ -58,7 +76,8 @@ class _LazyImport(object):
             raise Exception()
         self.FuncAfterImport = FuncAfterImport
     def _ImportModule(self):
-        # assert not self.IsModuleImported:
+        # assert not self.IsModuleImported
+        import importlib
         try:
             Module = importlib.import_module(self.ModuleName)
         except Exception:
@@ -134,3 +153,25 @@ TimeStart = time.time()
 import DLUtils
 TimeEnd = time.time()
 print("Finished. Time: %.3fs"%(TimeEnd-TimeStart))
+
+LazyNumpy = LazyImport("numpy")
+def GetLazyNumpy():
+    return LazyNumpy
+LazyScipy = LazyImport("scipy")
+def GetLazyScipy():
+    return LazyScipy
+LazyTorch = LazyImport("torch")
+def GetLazyTorch():
+    return LazyTorch
+LazyPsUtil = LazyImport("psutil")
+def GetLazyPsUtil():
+    return LazyPsUtil
+LazyMatplotlib = LazyImport("matplotlib")
+def GetLazyMatplotlib():
+    return LazyMatplotlib
+LazyPlt = LazyFromImport("matplotlib", "plt")
+def GetLazyPlt():
+    return LazyPlt
+LazyPILImage = LazyImport("PIL.Image")
+def GetLazyPILImage():
+    return LazyPILImage

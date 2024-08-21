@@ -22,8 +22,6 @@ def GetScriptDirPath(__File__=None, EndWithSlash=True):
     return script_dir_pathlib
 GetCurrentScriptDirPath = GetScriptDirPath
 
-
-
 def class_instance_from_class_path(Instance):
     cls = Instance.__class__
     module = cls.__module__

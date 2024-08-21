@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 class _PipeOutIncreaseIndent:
     def __init__(self, Parent: PipeOut):
         self.Parent = Parent

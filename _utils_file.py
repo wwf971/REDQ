@@ -1,5 +1,4 @@
 from pathlib import Path
-
 def file_exist(file_path):
     return Path(file_path).is_file()
 
@@ -11,6 +10,12 @@ def dir_exist(dir_path):
 
 def check_dir_exist(dir_path):
     assert dir_exist(dir_path)
+    return dir_path
+
+def create_dir_if_non_exist(dir_path):
+    dir_path_obj = Path(dir_path)
+    dir_path_obj.mkdir(parents=True, exist_ok=True)
+    return
 
 def remove_file(file_path):
     assert file_exist(file_path)
@@ -27,7 +32,7 @@ def get_file_name_and_suffix(file_name):
     else:
         return match_result.group(1), match_result.group(2)
 
-def get_file_path_without_suffix(file_path, EndWithSlash=True):
+def get_file_path_without_suffix(file_path):
     file_path_no_suffix, suffix = get_file_name_and_suffix(file_path)
     return file_path_no_suffix
 
